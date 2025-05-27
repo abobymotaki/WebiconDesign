@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Briefcase, Users, LogIn, UserPlus } from 'lucide-react';
+import { Moon, Sun, Users, LogIn, UserPlus } from 'lucide-react'; // Removed Briefcase
 import { useState, useEffect } from 'react';
 
 const Header = () => {
@@ -11,32 +12,53 @@ const Header = () => {
 
   useEffect(() => {
     setMounted(true);
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDarkMode(document.documentElement.classList.contains('dark') || (!('theme' in localStorage) && prefersDark));
+    // Check localStorage for theme preference
+    const localTheme = localStorage.getItem('theme');
+    if (localTheme) {
+      setIsDarkMode(localTheme === 'dark');
+      if (localTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } else {
+      // Fallback to system preference if no localStorage preference
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+      if (prefersDark) {
+        document.documentElement.classList.add('dark');
+      }
+    }
   }, []);
   
   const toggleTheme = () => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
+    const newIsDarkMode = !isDarkMode;
+    setIsDarkMode(newIsDarkMode);
+    if (newIsDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
-    setIsDarkMode(!isDarkMode);
   };
 
   if (!mounted) {
     return (
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
+        <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-6">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8 text-primary">
+              <path d="M6.5 3L2 7V17L6.5 21L11 17V7L6.5 3ZM4 7.5L6.5 5L9 7.5V16.5L6.5 19L4 16.5V7.5Z" />
+              <path d="M17.5 3L13 7V17L17.5 21L22 17V7L17.5 3ZM15 7.5L17.5 5L20 7.5V16.5L17.5 19L15 16.5V7.5Z" />
             </svg>
-            <span className="font-bold text-xl text-foreground">WebiconDesign</span>
+            <span className="font-extrabold text-2xl tracking-tight text-foreground">WebiconDesign</span>
           </Link>
-          <div className="h-8 w-8 rounded-full bg-muted animate-pulse" /> {/* Placeholder for theme toggle */}
+          <div className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-full bg-muted animate-pulse" /> {/* Placeholder for theme toggle */}
+            <div className="h-8 w-20 rounded-md bg-muted animate-pulse hidden sm:block" /> {/* Placeholder for login */}
+            <div className="h-8 w-24 rounded-md bg-muted animate-pulse" /> {/* Placeholder for signup */}
+          </div>
         </div>
       </header>
     );
@@ -46,7 +68,6 @@ const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-6">
         <Link href="/" className="mr-6 flex items-center space-x-2">
-          {/* Simplified Logo Icon - abstract W + D */}
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8 text-primary">
             <path d="M6.5 3L2 7V17L6.5 21L11 17V7L6.5 3ZM4 7.5L6.5 5L9 7.5V16.5L6.5 19L4 16.5V7.5Z" />
             <path d="M17.5 3L13 7V17L17.5 21L22 17V7L17.5 3ZM15 7.5L17.5 5L20 7.5V16.5L17.5 19L15 16.5V7.5Z" />
@@ -54,18 +75,16 @@ const Header = () => {
           <span className="font-extrabold text-2xl tracking-tight text-foreground">WebiconDesign</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-          <Link href="#features" className="text-muted-foreground transition-colors hover:text-foreground">
+          <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">
             Features
           </Link>
-          <Link href="#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">
+          <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">
             How It Works
           </Link>
           <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
             <Users className="mr-1 h-4 w-4" /> Find Talent
           </Link>
-          <Link href="/find-work" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
-            <Briefcase className="mr-1 h-4 w-4" /> Find Work
-          </Link>
+          {/* "Find Work" button removed */}
         </nav>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">

@@ -1,5 +1,6 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, FileText, Briefcase, Award } from 'lucide-react';
+import { UserPlus, FileText, Briefcase, Award, DollarSign } from 'lucide-react';
 
 const steps = [
   {
@@ -21,9 +22,9 @@ const steps = [
     delay: 2,
   },
   {
-    icon: <Award className="h-10 w-10 text-primary" />,
+    icon: <DollarSign className="h-10 w-10 text-primary" />, // Changed icon to DollarSign
     title: 'Payment & Review',
-    description: 'Securely process payments upon project completion. Both parties can leave reviews to build reputation.',
+    description: 'Securely process payments before the project begins. After completion, both parties can leave reviews to build reputation.', // Updated description
     delay: 3,
   },
 ];
