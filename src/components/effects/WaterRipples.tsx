@@ -54,22 +54,25 @@ const WaterRipples: React.FC = () => {
             key={ripple.id}
             className="absolute rounded-full"
             style={{
-              width: ripple.maxSize, 
-              height: ripple.maxSize,
+              // width and height are now animated, not fixed here
               left: ripple.x,
               top: ripple.y,
-              transform: 'translate(-50%, -50%)', 
+              transform: 'translate(-50%, -50%)', // Ensures center is at cursor
               background: 'radial-gradient(circle, hsl(var(--primary) / 0.7) 0%, hsl(var(--secondary) / 0.5) 50%, hsl(var(--accent) / 0.3) 100%)',
-              // Enhanced shadow for more "shaded" look
               boxShadow: `
                 0px 3px 8px hsl(var(--primary) / 0.4), 
                 0px 6px 15px hsl(var(--secondary) / 0.3),
                 inset 0 0 5px hsl(var(--background) / 0.1)
               `,
             }}
-            initial={{ scale: 0.1, opacity: 0.9 }}
+            initial={{ 
+              width: 0, 
+              height: 0, 
+              opacity: 0.9 
+            }}
             animate={{ 
-              scale: 1, 
+              width: ripple.maxSize, 
+              height: ripple.maxSize, 
               opacity: 0,
             }}
             transition={{ duration: ripple.duration, ease: 'easeOut' }}
