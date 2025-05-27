@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { Twitter, Github, Linkedin } from 'lucide-react';
+import { Twitter, Github, Linkedin, CreditCard } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -16,7 +16,7 @@ const Footer = () => {
               <span className="font-extrabold text-2xl text-foreground">WebiconDesign</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Connecting talent with opportunity. Find your next freelance project or hire experts for your needs.
+              Connecting talent with opportunity. Find your next project or hire experts for your needs.
             </p>
           </div>
           <div className="md:col-span-2 grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -26,7 +26,8 @@ const Footer = () => {
                 <li><Link href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it Works</Link></li>
                 <li><Link href="/#features" className="text-sm text-muted-foreground hover:text-foreground">Features</Link></li>
                 <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing</Link></li>
-                 <li><Link href="/find-talent" className="text-sm text-muted-foreground hover:text-foreground">Find Talent</Link></li>
+                 <li><Link href="/find-talent" className="text-sm text-muted-foreground hover:text-foreground">Find Professionals</Link></li>
+                 <li><Link href="/payments" className="text-sm text-muted-foreground hover:text-foreground">Payments</Link></li>
               </ul>
             </div>
             <div>

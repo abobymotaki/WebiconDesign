@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Users, LogIn, UserPlus } from 'lucide-react'; // Removed Briefcase
+import { Moon, Sun, Users, LogIn, UserPlus, CreditCard, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const Header = () => {
@@ -12,7 +12,6 @@ const Header = () => {
 
   useEffect(() => {
     setMounted(true);
-    // Check localStorage for theme preference
     const localTheme = localStorage.getItem('theme');
     if (localTheme) {
       setIsDarkMode(localTheme === 'dark');
@@ -22,7 +21,6 @@ const Header = () => {
         document.documentElement.classList.remove('dark');
       }
     } else {
-      // Fallback to system preference if no localStorage preference
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(prefersDark);
       if (prefersDark) {
@@ -82,9 +80,11 @@ const Header = () => {
             How It Works
           </Link>
           <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
-            <Users className="mr-1 h-4 w-4" /> Find Talent
+            <Search className="mr-1 h-4 w-4" /> Find Professionals
           </Link>
-          {/* "Find Work" button removed */}
+          <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
+            <CreditCard className="mr-1 h-4 w-4" /> Payments
+          </Link>
         </nav>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">

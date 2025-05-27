@@ -21,10 +21,10 @@ const HeroSection = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="text-center md:text-left">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-              Unleash Your <span className="text-primary">Creative Potential</span>
+              Unleash Your <span className="text-primary">Project Potential</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0">
-              WebiconDesign is the premier platform connecting innovative freelancers with businesses seeking top-tier design and web development talent.
+              WebiconDesign is the premier platform connecting innovative professionals with businesses seeking top-tier talent for their projects.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <Button size="lg" asChild className="aura-pulse">
@@ -41,14 +41,14 @@ const HeroSection = () => {
               </Button>
             </div>
             <p className="mt-8 text-sm text-muted-foreground">
-              Join thousands of freelancers and clients. No credit card required.
+              Join thousands of professionals and clients. No credit card required.
             </p>
           </div>
           <div className="relative group">
              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
             <Image
               src="https://placehold.co/600x400.png"
-              alt="Freelancing platform interface"
+              alt="Platform interface"
               width={600}
               height={400}
               className="rounded-xl shadow-2xl relative z-10 transform group-hover:scale-105 transition-transform duration-300"

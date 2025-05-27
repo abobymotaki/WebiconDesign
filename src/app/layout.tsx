@@ -13,8 +13,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'WebiconDesign - Freelance Platform',
-  description: 'Connect with talented freelancers or find your next project on WebiconDesign.',
+  title: 'WebiconDesign - Your Project Platform',
+  description: 'Connect with skilled professionals or find your next project on WebiconDesign.',
 };
 
 export default function RootLayout({

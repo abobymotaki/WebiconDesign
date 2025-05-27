@@ -5,7 +5,7 @@ const features = [
   {
     icon: <Search className="h-8 w-8 text-primary" />,
     title: 'Advanced Project Matching',
-    description: 'Our intelligent algorithm connects you with the perfect freelancers or projects based on your specific needs and skills.',
+    description: 'Our intelligent algorithm connects you with the perfect professionals or projects based on your specific needs and skills.',
     delay: 0,
   },
   {
@@ -23,7 +23,7 @@ const features = [
   {
     icon: <MessageSquare className="h-8 w-8 text-primary" />,
     title: 'Real-time Communication',
-    description: 'Stay connected with clients or freelancers through instant messaging and video calls.',
+    description: 'Stay connected with collaborators or clients through instant messaging and video calls.',
     delay: 0,
   },
   {
@@ -49,7 +49,7 @@ const FeaturesSection = () => {
             Why Choose <span className="text-primary">WebiconDesign</span>?
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover the features that make our platform the ideal choice for freelancers and businesses alike.
+            Discover the features that make our platform the ideal choice for professionals and businesses alike.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

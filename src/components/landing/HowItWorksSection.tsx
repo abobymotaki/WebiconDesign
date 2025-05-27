@@ -1,18 +1,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, FileText, Briefcase, Award, DollarSign } from 'lucide-react';
+import { UserPlus, FileText, Briefcase, DollarSign } from 'lucide-react'; // Removed Award
 
 const steps = [
   {
     icon: <UserPlus className="h-10 w-10 text-primary" />,
     title: 'Sign Up & Create Profile',
-    description: 'Join for free and set up your detailed profile, whether you are a freelancer showcasing skills or a client posting a project.',
+    description: 'Join for free and set up your detailed profile, whether you are a professional showcasing skills or a client posting a project.',
     delay: 0,
   },
   {
     icon: <FileText className="h-10 w-10 text-primary" />,
-    title: 'Post or Find Projects',
-    description: 'Clients can post detailed project requirements. Freelancers can browse and apply for projects that match their expertise.',
+    title: 'Post or Find Opportunities',
+    description: 'Clients can post detailed project requirements. Professionals can browse and apply for projects that match their expertise.',
     delay: 1,
   },
   {
@@ -22,9 +22,9 @@ const steps = [
     delay: 2,
   },
   {
-    icon: <DollarSign className="h-10 w-10 text-primary" />, // Changed icon to DollarSign
+    icon: <DollarSign className="h-10 w-10 text-primary" />,
     title: 'Payment & Review',
-    description: 'Securely process payments before the project begins. After completion, both parties can leave reviews to build reputation.', // Updated description
+    description: 'Securely process payments before the project begins. After completion, both parties can leave reviews to build reputation.',
     delay: 3,
   },
 ];

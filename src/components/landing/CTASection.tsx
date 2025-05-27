@@ -11,7 +11,7 @@ const CTASection = () => {
           Ready to Elevate Your Work?
         </h2>
         <p className="mt-6 text-lg md:text-xl max-w-xl mx-auto opacity-90">
-          Join WebiconDesign today and connect with a vibrant community of freelancers and businesses.
+          Join WebiconDesign today and connect with a vibrant community of professionals and businesses.
           Your next big opportunity is just a click away.
         </p>
         <div className="mt-10">
