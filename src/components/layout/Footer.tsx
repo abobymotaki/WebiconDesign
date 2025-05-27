@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Twitter, Github, Linkedin } from 'lucide-react';
 
@@ -22,9 +23,10 @@ const Footer = () => {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Platform</h3>
               <ul className="mt-4 space-y-2">
-                <li><Link href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it Works</Link></li>
-                <li><Link href="#features" className="text-sm text-muted-foreground hover:text-foreground">Features</Link></li>
+                <li><Link href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it Works</Link></li>
+                <li><Link href="/#features" className="text-sm text-muted-foreground hover:text-foreground">Features</Link></li>
                 <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing</Link></li>
+                 <li><Link href="/find-talent" className="text-sm text-muted-foreground hover:text-foreground">Find Talent</Link></li>
               </ul>
             </div>
             <div>
