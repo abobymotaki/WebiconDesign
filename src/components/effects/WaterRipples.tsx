@@ -54,7 +54,6 @@ const WaterRipples: React.FC = () => {
             key={ripple.id}
             className="absolute rounded-full"
             style={{
-              // width and height are now animated, not fixed here
               left: ripple.x,
               top: ripple.y,
               transform: 'translate(-50%, -50%)', // Ensures center is at cursor

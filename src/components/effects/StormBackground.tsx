@@ -9,7 +9,6 @@ const StormBackground: React.FC = () => {
       <div className="storm-layer storm-layer-1"></div>
       <div className="storm-layer storm-layer-2"></div>
       <div className="storm-layer storm-layer-3"></div>
-      <div className="storm-layer storm-layer-4"></div> {/* Added rain layer */}
     </div>
   );
 };

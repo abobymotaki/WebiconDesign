@@ -40,21 +40,21 @@ const MouseTrail: React.FC = () => {
   const addParticle = useCallback((x: number, y: number) => {
     const newParticle: Particle = {
       id: Date.now() + Math.random(),
-      x: x + (Math.random() - 0.5) * 25, // Slightly more spread
-      y: y + (Math.random() - 0.5) * 25,
-      size: Math.random() * 7 + 4, // Random size between 4px and 11px
-      opacity: 0.8 + Math.random() * 0.2, // Initial opacity 0.8 to 1.0
+      x: x + (Math.random() - 0.5) * 10, // Reduced spread
+      y: y + (Math.random() - 0.5) * 10, // Reduced spread
+      size: 8, // More consistent size
+      opacity: 0.8 + Math.random() * 0.2, 
       rotation: Math.random() * 360,
     };
 
     setParticles((prevParticles) => {
       const updatedParticles = [...prevParticles, newParticle];
-      return updatedParticles.slice(Math.max(updatedParticles.length - 25, 0)); // Limit to 25 particles
+      return updatedParticles.slice(Math.max(updatedParticles.length - 25, 0)); 
     });
   }, []);
 
   useEffect(() => {
-    const throttledAddParticle = throttle(addParticle, 30); // Throttle to add particle every 30ms
+    const throttledAddParticle = throttle(addParticle, 10); // Increased frequency
 
     const handleMouseMove = (event: MouseEvent) => {
       throttledAddParticle(event.clientX, event.clientY);
@@ -83,15 +83,14 @@ const MouseTrail: React.FC = () => {
             }}
             animate={{
               opacity: 0,
-              scale: 0.3, // Shrink more
-              y: particle.y - particle.size / 2 - (30 + Math.random() * 20), // Move up more and variably
-              rotate: particle.rotation + (Math.random() - 0.5) * 90, // Slight rotation during animation
+              scale: 0.3, 
+              y: particle.y - particle.size / 2 - (30 + Math.random() * 20), 
+              rotate: particle.rotation + (Math.random() - 0.5) * 90, 
             }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 + Math.random() * 0.5, ease: "easeOut" }} // Varied duration
+            transition={{ duration: 1.5 + Math.random() * 0.5, ease: "easeOut" }} 
             style={{
               position: 'absolute',
-              // Mix primary and accent for more visual interest
               backgroundColor: Math.random() > 0.5 ? 'hsl(var(--primary) / 0.7)' : 'hsl(var(--accent) / 0.6)',
               borderRadius: '50%',
               boxShadow: `0 0 ${Math.random() * 6 + 6}px ${Math.random() > 0.5 ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--accent) / 0.4)'}, 0 0 ${Math.random() * 8 + 8}px hsl(var(--secondary) / 0.2)`,
