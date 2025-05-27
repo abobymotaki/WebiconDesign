@@ -6,6 +6,9 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -20,20 +23,17 @@ import { ShieldAlert, LogIn, Loader2 } from 'lucide-react';
 
 const adminLoginFormSchema = z.object({
   email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(1, { message: "Password is required." }),
+  password: z.string().min(1, { message: "Password is required." }), // Min 1 for prototype, Firebase has its own rules
 });
 
 type AdminLoginFormValues = z.infer<typeof adminLoginFormSchema>;
-
-const ADMIN_EMAIL = "takiakiba3@gmail.com";
-const ADMIN_PASSWORD = "adminTaki,1234";
 
 const AdminLoginPage: NextPage = () => {
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if already admin authenticated
+  // Redirect if already admin authenticated (via sessionStorage flag)
   useEffect(() => {
     if (sessionStorage.getItem('isAdminAuthenticated') === 'true') {
       router.replace('/adminpanel/admin');
@@ -50,26 +50,62 @@ const AdminLoginPage: NextPage = () => {
 
   const onSubmit = async (data: AdminLoginFormValues) => {
     setIsSubmitting(true);
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
 
-    if (data.email === ADMIN_EMAIL && data.password === ADMIN_PASSWORD) {
-      sessionStorage.setItem('isAdminAuthenticated', 'true');
-      toast({
-        title: "Admin Login Successful!",
-        description: "Redirecting to admin panel...",
-        variant: "default",
-      });
-      router.push('/adminpanel/admin');
-    } else {
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists() && userDocSnap.data().isAdmin === true) {
+          sessionStorage.setItem('isAdminAuthenticated', 'true');
+          // Optionally store admin user details if needed, but be mindful of PII in sessionStorage
+          // sessionStorage.setItem('adminUserDetails', JSON.stringify({ uid: user.uid, email: user.email }));
+          toast({
+            title: "Admin Login Successful!",
+            description: "Redirecting to admin panel...",
+            variant: "default",
+          });
+          router.push('/adminpanel/admin');
+        } else {
+          // Logged in via Firebase Auth, but not an admin in Firestore
+          await signOut(auth); // Sign out the non-admin user
+          toast({
+            title: "Admin Login Failed",
+            description: "You are not authorized to access the admin panel.",
+            variant: "destructive",
+          });
+          form.resetField("password");
+        }
+      } else {
+         // Should not happen if signInWithEmailAndPassword resolves successfully
+        throw new Error("User not found after login.");
+      }
+    } catch (error: any) {
+      let errorMessage = "An unexpected error occurred during admin login.";
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/invalid-credential':
+          case 'auth/user-not-found':
+          case 'auth/wrong-password':
+            errorMessage = "Invalid email or password.";
+            break;
+          default:
+            errorMessage = error.message;
+        }
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
       toast({
         title: "Admin Login Failed",
-        description: "Invalid email or password.",
+        description: errorMessage,
         variant: "destructive",
       });
       form.resetField("password");
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   return (
@@ -80,13 +116,9 @@ const AdminLoginPage: NextPage = () => {
           <CardHeader className="text-center">
             <ShieldAlert className="h-12 w-12 mx-auto mb-4 text-primary" />
             <CardTitle className="text-3xl font-bold">Admin Panel Login</CardTitle>
-            <CardDescription>Access restricted to authorized personnel.</CardDescription>
+            <CardDescription>Access restricted. Please log in with admin credentials.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-300 rounded-md">
-              <p className="font-bold">Security Notice:</p>
-              <p className="text-sm">This is a prototype admin login with hardcoded credentials and is NOT secure for production use.</p>
-            </div>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField

@@ -4,55 +4,114 @@
 import type { NextPage } from 'next';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, LogOut, ShieldCheck, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AdminPanelPage: NextPage = () => {
   const router = useRouter();
   const { toast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [adminUser, setAdminUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Check authentication status on component mount
-    const adminAuthStatus = sessionStorage.getItem('isAdminAuthenticated');
-    if (adminAuthStatus === 'true') {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-      toast({
-        title: "Access Denied",
-        description: "You are not authorized to view this page. Redirecting to homepage.",
-        variant: "destructive"
-      });
-      router.replace('/'); // Redirect to homepage if not authenticated
-    }
-  }, [router, toast]);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDocSnap = await getDoc(userDocRef);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('isAdminAuthenticated');
-    toast({
-      title: "Admin Logout",
-      description: "You have been logged out from the admin panel.",
+          if (userDocSnap.exists() && userDocSnap.data().isAdmin === true) {
+            setAdminUser(user);
+            sessionStorage.setItem('isAdminAuthenticated', 'true'); // Keep sessionStorage for quick client checks if needed
+          } else {
+            // User is authenticated with Firebase, but not an admin in Firestore
+            await signOut(auth); // Sign them out
+            sessionStorage.removeItem('isAdminAuthenticated');
+            toast({
+              title: "Access Denied",
+              description: "You are not authorized to view this page. Redirecting...",
+              variant: "destructive"
+            });
+            router.replace('/');
+          }
+        } catch (error) {
+          console.error("Error verifying admin status:", error);
+          await signOut(auth);
+          sessionStorage.removeItem('isAdminAuthenticated');
+          toast({
+            title: "Authentication Error",
+            description: "Could not verify admin status. Redirecting...",
+            variant: "destructive"
+          });
+          router.replace('/');
+        }
+      } else {
+        // No user logged in with Firebase Auth
+        sessionStorage.removeItem('isAdminAuthenticated');
+         toast({
+            title: "Access Denied",
+            description: "You must be logged in as an admin to view this page. Redirecting...",
+            variant: "destructive"
+          });
+        router.replace('/adminpanel/admin/login');
+      }
+      setIsLoading(false);
     });
-    router.push('/adminpanel/admin/login');
+
+    // Fallback check for sessionStorage in case onAuthStateChanged takes time or has issues
+    // This helps prevent brief flashes of content for non-admins if they land here directly
+    // and Firebase hasn't yet determined auth state.
+    if (sessionStorage.getItem('isAdminAuthenticated') !== 'true' && !auth.currentUser) {
+        if (!isLoading) { // only redirect if initial check is done
+           router.replace('/adminpanel/admin/login');
+        }
+    }
+
+
+    return () => unsubscribe();
+  }, [router, toast, isLoading]);
+
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await signOut(auth);
+      sessionStorage.removeItem('isAdminAuthenticated');
+      // sessionStorage.removeItem('adminUserDetails'); 
+      toast({
+        title: "Admin Logout",
+        description: "You have been logged out from the admin panel.",
+      });
+      router.push('/adminpanel/admin/login');
+    } catch (error) {
+      console.error("Error logging out admin:", error);
+      toast({
+        title: "Logout Failed",
+        description: "Could not log you out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (isAuthenticated === null) {
-    // Still checking auth status, render loading or nothing
+  if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-background items-center justify-center">
-        <LayoutDashboard className="h-16 w-16 text-primary animate-pulse mb-4" />
-        <p className="text-muted-foreground">Loading Admin Panel...</p>
+        <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground">Verifying Admin Access...</p>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    // This state should ideally not be reached for long due to redirect
+  if (!adminUser) {
+    // This state should ideally not be reached for long due to redirects in useEffect
     // but acts as a fallback.
     return (
        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
@@ -62,7 +121,6 @@ const AdminPanelPage: NextPage = () => {
     );
   }
 
-  // If authenticated, render admin panel content
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -74,25 +132,24 @@ const AdminPanelPage: NextPage = () => {
                 <LayoutDashboard className="mr-3 h-8 w-8 text-primary" />
                 Admin Control Panel
               </CardTitle>
-              <CardDescription>Manage your application from here.</CardDescription>
+              <CardDescription>Manage your application from here. Welcome, {adminUser.email}!</CardDescription>
             </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="mr-2 h-4 w-4" /> Admin Logout
+            <Button variant="outline" onClick={handleLogout} disabled={isLoading}>
+              {isLoading && router.pathname.includes('/adminpanel/admin/login') ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <LogOut className="mr-2 h-4 w-4" />}
+               Admin Logout
             </Button>
           </CardHeader>
           <CardContent>
-            <p className="text-lg mb-4">Welcome, Admin!</p>
-            <div className="mb-6 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-300 rounded-md">
-              <p className="font-bold">Security Notice:</p>
-              <p className="text-sm">This admin panel is using a prototype-level hardcoded authentication mechanism. It is NOT secure for production use. For a real application, implement robust authentication with proper user roles and permissions.</p>
+             <div className="mb-6 p-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-300 rounded-md">
+              <p className="font-bold">Admin System Notice:</p>
+              <p className="text-sm">This admin panel now uses Firebase Authentication and Firestore for role verification. Ensure the admin user is correctly set up in Firebase Auth and their Firestore document has `isAdmin: true`.</p>
             </div>
             <div className="p-6 border rounded-lg bg-muted/30">
               <h3 className="text-xl font-semibold mb-3 text-foreground">Placeholder Admin Content</h3>
               <p className="text-muted-foreground">
                 This is where your admin functionalities like user management, analytics, content moderation, etc., would go.
-                For now, it's a placeholder to demonstrate the login and logout flow.
+                For now, it's a placeholder to demonstrate the login and logout flow using Firebase.
               </p>
-              {/* Example: Link to other admin sections could go here */}
             </div>
           </CardContent>
         </Card>
