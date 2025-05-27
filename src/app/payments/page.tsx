@@ -10,6 +10,7 @@ import CheckoutForm from '@/components/payments/CheckoutForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreditCard, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Link from 'next/link'; // Added missing import
 
 // Ensure your Stripe publishable key is set in your .env file
 // NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_yourkeyhere
