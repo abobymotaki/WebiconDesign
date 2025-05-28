@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare } from 'lucide-react';
+import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail } from 'lucide-react'; // Added Mail
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -168,6 +168,9 @@ const Header = () => {
           <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
             <CreditCard className="mr-1 h-4 w-4" /> Payments
           </Link>
+          <Link href="/contact" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
+            <Mail className="mr-1 h-4 w-4" /> Contact Us
+          </Link>
           {isProvider && currentUser && (
             <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80">
               <Briefcase className="mr-1 h-4 w-4" /> Provider Panel
@@ -189,7 +192,6 @@ const Header = () => {
             </Button>
           ) : (
             <>
-              {/* Removed Provider Login Button */}
               <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/login">
                   <LogIn className="mr-2 h-4 w-4" /> Log In
