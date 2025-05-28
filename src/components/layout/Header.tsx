@@ -3,11 +3,11 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare } from 'lucide-react'; // Added Briefcase, UserCog, MessageSquare
+import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase'; // Added db
-import { doc, getDoc } from 'firebase/firestore'; // Added getDoc
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
@@ -16,8 +16,8 @@ const Header = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isProvider, setIsProvider] = useState(false); // New state for provider status
-  const [isAdmin, setIsAdmin] = useState(false); // New state for admin status
+  const [isProvider, setIsProvider] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -39,17 +39,32 @@ const Header = () => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        // Check for provider or admin status from Firestore
         const userDocRef = doc(db, "users", user.uid);
         try {
           const userDocSnap = await getDoc(userDocRef);
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            setIsProvider(userData.isProvider === true);
-            setIsAdmin(userData.isAdmin === true);
-            // Also update sessionStorage flags if needed for other components
-            if(userData.isProvider) sessionStorage.setItem('isProviderAuthenticated', 'true'); else sessionStorage.removeItem('isProviderAuthenticated');
-            if(userData.isAdmin) sessionStorage.setItem('isAdminAuthenticated', 'true'); else sessionStorage.removeItem('isAdminAuthenticated');
+            const currentIsProvider = userData.isProvider === true;
+            const currentIsAdmin = userData.isAdmin === true;
+            setIsProvider(currentIsProvider);
+            setIsAdmin(currentIsAdmin);
+            
+            if(currentIsProvider) sessionStorage.setItem('isProviderAuthenticated', 'true'); else sessionStorage.removeItem('isProviderAuthenticated');
+            if(currentIsAdmin) sessionStorage.setItem('isAdminAuthenticated', 'true'); else sessionStorage.removeItem('isAdminAuthenticated');
+
+            if (currentIsProvider && sessionStorage.getItem('providerWelcomeShownThisSession') !== 'true') {
+              toast({
+                title: "Welcome back, Provider!",
+                description: "You can access your provider tools.",
+                action: (
+                  <Button variant="outline" size="sm" onClick={() => router.push('/providerspanel/dashboard')}>
+                    Go to Dashboard
+                  </Button>
+                ),
+              });
+              sessionStorage.setItem('providerWelcomeShownThisSession', 'true');
+            }
+
           } else {
             setIsProvider(false);
             setIsAdmin(false);
@@ -66,12 +81,13 @@ const Header = () => {
         setIsAdmin(false);
         sessionStorage.removeItem('isProviderAuthenticated');
         sessionStorage.removeItem('isAdminAuthenticated');
+        sessionStorage.removeItem('providerWelcomeShownThisSession'); // Clear welcome toast flag on logout
       }
       setIsLoadingAuth(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [toast, router]);
   
   const toggleTheme = () => {
     const newIsDarkModeState = !isDarkMode;
@@ -83,10 +99,11 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      setIsProvider(false); // Reset provider state on logout
-      setIsAdmin(false); // Reset admin state on logout
+      setIsProvider(false);
+      setIsAdmin(false);
       sessionStorage.removeItem('isProviderAuthenticated');
       sessionStorage.removeItem('isAdminAuthenticated');
+      sessionStorage.removeItem('providerWelcomeShownThisSession');
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
@@ -102,7 +119,6 @@ const Header = () => {
     }
   };
 
-  // Skeleton loader for header while auth is loading
   if (!mounted || isLoadingAuth) {
     return (
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -173,11 +189,7 @@ const Header = () => {
             </Button>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
-                <Link href="/providerspanel/login">
-                   Provider Login
-                </Link>
-              </Button>
+              {/* Removed Provider Login Button */}
               <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/login">
                   <LogIn className="mr-2 h-4 w-4" /> Log In

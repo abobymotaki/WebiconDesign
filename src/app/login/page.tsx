@@ -7,7 +7,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase'; // Added db
+import { doc, getDoc } from 'firebase/firestore'; // Added getDoc
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -44,13 +45,33 @@ const LoginPage: NextPage = () => {
   const onSubmit = async (data: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
+
       toast({
         title: "Login Successful!",
-        description: "Welcome back to the platform.",
+        description: "Welcome back.",
         variant: "default",
       });
-      router.push('/'); // Redirect to homepage after login
+
+      // Check if user is a provider and redirect
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && userDocSnap.data().isProvider === true) {
+          sessionStorage.setItem('isProviderAuthenticated', 'true');
+          router.push('/providerspanel/dashboard'); // Redirect providers to their dashboard
+        } else if (userDocSnap.exists() && userDocSnap.data().isAdmin === true) {
+          sessionStorage.setItem('isAdminAuthenticated', 'true');
+          router.push('/adminpanel/admin'); // Redirect admins to their dashboard
+        }
+        else {
+          router.push('/'); // Redirect regular users to homepage
+        }
+      } else {
+        router.push('/'); // Fallback redirect
+      }
+
     } catch (error: any) {
       console.error("Error signing in:", error);
        const errorMessage = error.code === 'auth/invalid-credential' 
