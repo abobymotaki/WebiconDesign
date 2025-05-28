@@ -16,7 +16,7 @@ const Footer = () => {
               <span className="font-extrabold text-2xl text-foreground">WebiconDesign</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Connecting talent with opportunity. Find your next project or hire experts for your needs.
+              Your platform for expert project services, connecting businesses with top talent.
             </p>
           </div>
           <div className="md:col-span-2 grid grid-cols-2 gap-8 sm:grid-cols-3">
