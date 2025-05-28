@@ -3,13 +3,15 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail } from 'lucide-react'; // Added Mail
+import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail, Menu } from 'lucide-react'; // Added Menu
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
+import { Sheet, SheetContent, SheetClose, SheetTrigger } from '@/components/ui/sheet'; // Added Sheet components
+import { cn } from '@/lib/utils';
 
 const Header = () => {
   const [mounted, setMounted] = useState(false);
@@ -18,8 +20,10 @@ const Header = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isProvider, setIsProvider] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile menu
   const { toast } = useToast();
   const router = useRouter();
+  const pathname = usePathname(); // For closing sheet on navigation
 
   useEffect(() => {
     setMounted(true);
@@ -81,7 +85,7 @@ const Header = () => {
         setIsAdmin(false);
         sessionStorage.removeItem('isProviderAuthenticated');
         sessionStorage.removeItem('isAdminAuthenticated');
-        sessionStorage.removeItem('providerWelcomeShownThisSession'); // Clear welcome toast flag on logout
+        sessionStorage.removeItem('providerWelcomeShownThisSession'); 
       }
       setIsLoadingAuth(false);
     });
@@ -89,6 +93,11 @@ const Header = () => {
     return () => unsubscribe();
   }, [toast, router]);
   
+  // Close sheet on pathname change
+  useEffect(() => {
+    setIsSheetOpen(false);
+  }, [pathname]);
+
   const toggleTheme = () => {
     const newIsDarkModeState = !isDarkMode;
     setIsDarkMode(newIsDarkModeState);
@@ -97,6 +106,7 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
+    setIsSheetOpen(false); // Close sheet on logout
     try {
       await signOut(auth);
       setIsProvider(false);
@@ -118,6 +128,21 @@ const Header = () => {
       });
     }
   };
+
+  const NavLink = ({ href, children, icon: Icon }: { href: string; children: React.ReactNode; icon?: React.ElementType }) => (
+    <SheetClose asChild>
+      <Link
+        href={href}
+        className={cn(
+          "flex items-center py-2 px-3 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent",
+          pathname === href && "bg-accent text-foreground"
+        )}
+      >
+        {Icon && <Icon className="mr-2 h-4 w-4" />}
+        {children}
+      </Link>
+    </SheetClose>
+  );
 
   if (!mounted || isLoadingAuth) {
     return (
@@ -150,64 +175,106 @@ const Header = () => {
           </svg>
           <span className="font-extrabold text-2xl tracking-tight text-foreground">WebiconDesign</span>
         </Link>
+        
+        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
-          <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">
-            Features
-          </Link>
-          <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">
-            How It Works
-          </Link>
-          <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
-            <Search className="mr-1 h-4 w-4" /> Find Professionals
-          </Link>
+          <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">Features</Link>
+          <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How It Works</Link>
+          <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Search className="mr-1 h-4 w-4" /> Find Professionals</Link>
            {currentUser && (
-            <Link href="/messages" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
-                <MessageSquare className="mr-1 h-4 w-4" /> Messages
-            </Link>
+            <Link href="/messages" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><MessageSquare className="mr-1 h-4 w-4" /> Messages</Link>
            )}
-          <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
-            <CreditCard className="mr-1 h-4 w-4" /> Payments
-          </Link>
-          <Link href="/contact" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
-            <Mail className="mr-1 h-4 w-4" /> Contact Us
-          </Link>
+          <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><CreditCard className="mr-1 h-4 w-4" /> Payments</Link>
+          <Link href="/contact" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Mail className="mr-1 h-4 w-4" /> Contact Us</Link>
           {isProvider && currentUser && (
-            <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80">
-              <Briefcase className="mr-1 h-4 w-4" /> Provider Panel
-            </Link>
+            <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80"><Briefcase className="mr-1 h-4 w-4" /> Provider Panel</Link>
           )}
            {isAdmin && currentUser && (
-            <Link href="/adminpanel/admin" className="flex items-center text-destructive font-semibold transition-colors hover:text-destructive/80">
-              <UserCog className="mr-1 h-4 w-4" /> Admin Panel
-            </Link>
+            <Link href="/adminpanel/admin" className="flex items-center text-destructive font-semibold transition-colors hover:text-destructive/80"><UserCog className="mr-1 h-4 w-4" /> Admin Panel</Link>
           )}
         </nav>
+
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+          {/* Desktop Theme Toggle */}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="hidden md:inline-flex">
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+
+          {/* Desktop Auth Buttons */}
           {currentUser ? (
-            <Button variant="outline" size="sm" onClick={handleLogout}>
+            <Button variant="outline" size="sm" onClick={handleLogout} className="hidden md:inline-flex">
               <LogOut className="mr-2 h-4 w-4" /> Log Out
             </Button>
           ) : (
             <>
-              <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
-                <Link href="/login">
-                  <LogIn className="mr-2 h-4 w-4" /> Log In
-                </Link>
+              <Button variant="outline" size="sm" asChild className="hidden md:inline-flex">
+                <Link href="/login"><LogIn className="mr-2 h-4 w-4" /> Log In</Link>
               </Button>
-              <Button size="sm" asChild>
-                <Link href="/signup">
-                  <UserPlus className="mr-2 h-4 w-4" /> Sign Up
-                </Link>
+              <Button size="sm" asChild className="hidden md:inline-flex">
+                <Link href="/signup"><UserPlus className="mr-2 h-4 w-4" /> Sign Up</Link>
               </Button>
             </>
           )}
+
+          {/* Mobile Menu Trigger */}
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] p-4">
+              <div className="flex flex-col h-full">
+                <nav className="flex flex-col space-y-2 mt-6 flex-grow">
+                  <NavLink href="/#features" icon={Search /* Placeholder icon, choose appropriate ones */}>Features</NavLink>
+                  <NavLink href="/#how-it-works" icon={Search}>How It Works</NavLink>
+                  <NavLink href="/find-talent" icon={Search}>Find Professionals</NavLink>
+                  {currentUser && <NavLink href="/messages" icon={MessageSquare}>Messages</NavLink>}
+                  <NavLink href="/payments" icon={CreditCard}>Payments</NavLink>
+                  <NavLink href="/contact" icon={Mail}>Contact Us</NavLink>
+                  {isProvider && currentUser && <NavLink href="/providerspanel/dashboard" icon={Briefcase}>Provider Panel</NavLink>}
+                  {isAdmin && currentUser && <NavLink href="/adminpanel/admin" icon={UserCog}>Admin Panel</NavLink>}
+                </nav>
+                
+                <div className="mt-auto pt-4 border-t border-border/40">
+                  {currentUser ? (
+                    <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
+                      <LogOut className="mr-2 h-4 w-4" /> Log Out
+                    </Button>
+                  ) : (
+                    <div className="space-y-2">
+                      <SheetClose asChild>
+                        <Button variant="outline" size="sm" asChild className="w-full">
+                          <Link href="/login"><LogIn className="mr-2 h-4 w-4" /> Log In</Link>
+                        </Button>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Button size="sm" asChild className="w-full">
+                          <Link href="/signup"><UserPlus className="mr-2 h-4 w-4" /> Sign Up</Link>
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
+      {/* Mobile Theme Toggle - Fixed Bottom Left */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        onClick={toggleTheme} 
+        aria-label="Toggle theme" 
+        className="md:hidden fixed bottom-4 left-4 z-50 bg-background/80 backdrop-blur-sm border border-border/60 shadow-md"
+      >
+        {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </Button>
     </header>
   );
 };
 
 export default Header;
+
+    
