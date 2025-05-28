@@ -4,6 +4,7 @@
 import type { NextPage } from 'next';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Added Link
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
@@ -11,7 +12,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, LogOut, Briefcase, Loader2, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, LogOut, Briefcase, Loader2, ShieldCheck, UserCog, FileText, MessageSquare } from 'lucide-react'; // Added UserCog, FileText, MessageSquare
 import { useToast } from '@/hooks/use-toast';
 
 const ProviderDashboardPage: NextPage = () => {
@@ -63,9 +64,7 @@ const ProviderDashboardPage: NextPage = () => {
       setIsLoading(false);
     });
 
-    // Additional check for sessionStorage flag on initial load if auth state is not yet determined
     if (sessionStorage.getItem('isProviderAuthenticated') !== 'true' && !auth.currentUser) {
-        // Avoid redirecting if isLoading is true (still waiting for onAuthStateChanged)
         if (!isLoading) { 
            router.replace('/providerspanel/login');
         }
@@ -75,7 +74,7 @@ const ProviderDashboardPage: NextPage = () => {
   }, [router, toast, isLoading]);
 
   const handleLogout = async () => {
-    setIsLoading(true); // Indicate loading during logout
+    setIsLoading(true); 
     try {
       await signOut(auth);
       sessionStorage.removeItem('isProviderAuthenticated');
@@ -106,7 +105,6 @@ const ProviderDashboardPage: NextPage = () => {
   }
 
   if (!providerUser) {
-    // This state should ideally be brief as redirection happens in useEffect
     return (
        <div className="flex flex-col min-h-screen bg-background items-center justify-center">
         <ShieldCheck className="h-16 w-16 text-destructive mb-4" />
@@ -123,7 +121,7 @@ const ProviderDashboardPage: NextPage = () => {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-3xl font-bold flex items-center">
-                <Briefcase className="mr-3 h-8 w-8 text-primary" />
+                <LayoutDashboard className="mr-3 h-8 w-8 text-primary" />
                 Provider Dashboard
               </CardTitle>
               <CardDescription>Manage your services and profile. Welcome, {providerUser.email}!</CardDescription>
@@ -141,21 +139,33 @@ const ProviderDashboardPage: NextPage = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                        <CardTitle>Manage Profile</CardTitle>
-                        <CardDescription>Update your public profile and skills.</CardDescription>
+                    <CardHeader className="flex flex-row items-center gap-3">
+                        <div className="p-3 rounded-full bg-primary/10">
+                            <UserCog className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>Manage Profile</CardTitle>
+                            <CardDescription>Update your public profile and skills.</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
-                        <Button disabled className="w-full">
-                            Coming Soon
+                        <Button asChild className="w-full">
+                            <Link href="/providerspanel/profile">
+                                Go to Profile
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>
 
                 <Card className="hover:shadow-lg transition-shadow">
-                     <CardHeader>
-                        <CardTitle>View Projects/Requests</CardTitle>
-                        <CardDescription>See available projects or client requests.</CardDescription>
+                     <CardHeader className="flex flex-row items-center gap-3">
+                        <div className="p-3 rounded-full bg-primary/10">
+                            <Briefcase className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>View Projects/Requests</CardTitle>
+                            <CardDescription>See available projects or client requests.</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <Button disabled className="w-full">
@@ -165,13 +175,36 @@ const ProviderDashboardPage: NextPage = () => {
                 </Card>
                 
                 <Card className="hover:shadow-lg transition-shadow">
-                     <CardHeader>
-                        <CardTitle>Contact Submissions</CardTitle>
-                        <CardDescription>Review inquiries from the contact page.</CardDescription>
+                     <CardHeader className="flex flex-row items-center gap-3">
+                        <div className="p-3 rounded-full bg-primary/10">
+                            <FileText className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>Contact Submissions</CardTitle>
+                            <CardDescription>Review inquiries from the contact page.</CardDescription>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <Button disabled className="w-full">
                            Coming Soon
+                        </Button>
+                    </CardContent>
+                </Card>
+                 <Card className="hover:shadow-lg transition-shadow">
+                     <CardHeader className="flex flex-row items-center gap-3">
+                        <div className="p-3 rounded-full bg-primary/10">
+                            <MessageSquare className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>Client Messages</CardTitle>
+                            <CardDescription>View and respond to client messages.</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <Button asChild className="w-full" disabled>
+                           <Link href="/messages"> {/* Link to existing messages page, may need provider-specific filtering later */}
+                                View Messages (Coming Soon)
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>
