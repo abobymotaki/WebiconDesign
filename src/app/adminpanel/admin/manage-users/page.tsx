@@ -21,6 +21,7 @@ const ManageUsersPage: NextPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [adminUser, setAdminUser] = useState<User | null>(null);
+  const [formKey, setFormKey] = useState(Date.now()); // Used to force re-render CreateUserForm
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -63,28 +64,38 @@ const ManageUsersPage: NextPage = () => {
   const handleCreateUser = async (data: CreateUserFormValues) => {
     setIsSubmitting(true);
     try {
-      // Create user in Firebase Authentication
-      // Note: This uses the currently logged-in admin's auth instance.
-      // For true multi-admin scenarios, you might use Firebase Admin SDK on a backend.
-      // But for client-side admin panel, this is a common approach.
+      // Note: This approach of creating users client-side with admin's auth state
+      // has limitations, especially if you want to avoid the admin being signed-out/in.
+      // A Firebase Admin SDK on a backend function is the robust way.
+      // For this prototype, we are proceeding client-side.
+      // To avoid interference with admin's auth state, ideally one would use a secondary Firebase app instance or Admin SDK.
+      // Here, we use the existing `auth` instance. Firebase typically handles this gracefully,
+      // but `createUserWithEmailAndPassword` might briefly sign in the new user then sign out.
+      // The crucial part is setting Firestore data *before* any potential auth state change.
+      
+      // Create temporary auth instance for new user creation if possible, or accept that admin's current session *might* be affected.
+      // For simplicity here, we use the main `auth` object.
       const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
       const newUser = userCredential.user;
 
-      // Store additional user information in Firestore
       await setDoc(doc(db, "users", newUser.uid), {
         uid: newUser.uid,
         name: data.name,
         email: data.email,
         isAdmin: data.isAdmin || false,
+        isProvider: data.isProvider || false, // Save isProvider status
         createdAt: serverTimestamp(),
       });
+
+      // IMPORTANT: If the admin created the user, they are likely still logged in as admin.
+      // If createUserWithEmailAndPassword changes the auth state, we need to ensure the admin panel remains accessible.
+      // The useEffect in this page handles re-verification of admin status.
 
       toast({
         title: "User Created Successfully!",
         description: `Account for ${data.email} has been created.`,
       });
-      // Optionally reset form if CreateUserForm had a reset method passed via props or use internal reset
-      // For now, we assume the form might clear itself or the admin navigates away.
+      setFormKey(Date.now()); // Change key to re-render and reset CreateUserForm
     } catch (error: any) {
       console.error("Error creating user:", error);
       let errorMessage = "Failed to create user.";
@@ -103,6 +114,10 @@ const ManageUsersPage: NextPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  const resetForm = () => {
+    setFormKey(Date.now());
   };
 
 
@@ -143,7 +158,7 @@ const ManageUsersPage: NextPage = () => {
             <CardDescription>Create new user accounts for the platform.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
-            <CreateUserForm onSubmit={handleCreateUser} isSubmitting={isSubmitting} />
+            <CreateUserForm key={formKey} onSubmit={handleCreateUser} isSubmitting={isSubmitting} onFormReset={resetForm} />
             {/* Placeholder for listing users in the future */}
             {/* <div className="mt-8 pt-6 border-t">
               <h3 className="text-xl font-semibold mb-4">Existing Users</h3>

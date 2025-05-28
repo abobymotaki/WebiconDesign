@@ -3,10 +3,11 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare } from 'lucide-react'; // Added Briefcase, UserCog, MessageSquare
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase'; // Added db
+import { doc, getDoc } from 'firebase/firestore'; // Added getDoc
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
@@ -15,30 +16,57 @@ const Header = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [isProvider, setIsProvider] = useState(false); // New state for provider status
+  const [isAdmin, setIsAdmin] = useState(false); // New state for admin status
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
+    // Theme initialization
     const localTheme = localStorage.getItem('theme');
     if (localTheme) {
       const newIsDarkMode = localTheme === 'dark';
       setIsDarkMode(newIsDarkMode);
-      if (newIsDarkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      document.documentElement.classList.toggle('dark', newIsDarkMode);
     } else {
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(prefersDark);
-      if (prefersDark) {
-        document.documentElement.classList.add('dark');
-      }
+      document.documentElement.classList.toggle('dark', prefersDark);
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // Auth state listener
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user) {
+        // Check for provider or admin status from Firestore
+        const userDocRef = doc(db, "users", user.uid);
+        try {
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            setIsProvider(userData.isProvider === true);
+            setIsAdmin(userData.isAdmin === true);
+            // Also update sessionStorage flags if needed for other components
+            if(userData.isProvider) sessionStorage.setItem('isProviderAuthenticated', 'true'); else sessionStorage.removeItem('isProviderAuthenticated');
+            if(userData.isAdmin) sessionStorage.setItem('isAdminAuthenticated', 'true'); else sessionStorage.removeItem('isAdminAuthenticated');
+          } else {
+            setIsProvider(false);
+            setIsAdmin(false);
+            sessionStorage.removeItem('isProviderAuthenticated');
+            sessionStorage.removeItem('isAdminAuthenticated');
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error);
+          setIsProvider(false);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsProvider(false);
+        setIsAdmin(false);
+        sessionStorage.removeItem('isProviderAuthenticated');
+        sessionStorage.removeItem('isAdminAuthenticated');
+      }
       setIsLoadingAuth(false);
     });
 
@@ -48,23 +76,22 @@ const Header = () => {
   const toggleTheme = () => {
     const newIsDarkModeState = !isDarkMode;
     setIsDarkMode(newIsDarkModeState);
-    if (newIsDarkModeState) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    document.documentElement.classList.toggle('dark', newIsDarkModeState);
+    localStorage.setItem('theme', newIsDarkModeState ? 'dark' : 'light');
   };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      setIsProvider(false); // Reset provider state on logout
+      setIsAdmin(false); // Reset admin state on logout
+      sessionStorage.removeItem('isProviderAuthenticated');
+      sessionStorage.removeItem('isAdminAuthenticated');
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-      router.push('/'); // Redirect to home after logout
+      router.push('/'); 
     } catch (error) {
       console.error("Error logging out:", error);
       toast({
@@ -75,6 +102,7 @@ const Header = () => {
     }
   };
 
+  // Skeleton loader for header while auth is loading
   if (!mounted || isLoadingAuth) {
     return (
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -87,9 +115,9 @@ const Header = () => {
             <span className="font-extrabold text-2xl tracking-tight text-foreground">WebiconDesign</span>
           </Link>
           <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-muted animate-pulse" /> {/* Placeholder for theme toggle */}
-            <div className="h-8 w-20 rounded-md bg-muted animate-pulse hidden sm:block" /> {/* Placeholder for login/logout */}
-            <div className="h-8 w-24 rounded-md bg-muted animate-pulse" /> {/* Placeholder for signup/profile */}
+            <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+            <div className="h-8 w-20 rounded-md bg-muted animate-pulse hidden sm:block" />
+            <div className="h-8 w-24 rounded-md bg-muted animate-pulse" />
           </div>
         </div>
       </header>
@@ -106,7 +134,7 @@ const Header = () => {
           </svg>
           <span className="font-extrabold text-2xl tracking-tight text-foreground">WebiconDesign</span>
         </Link>
-        <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
+        <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
           <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">
             Features
           </Link>
@@ -116,9 +144,24 @@ const Header = () => {
           <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
             <Search className="mr-1 h-4 w-4" /> Find Professionals
           </Link>
+           {currentUser && (
+            <Link href="/messages" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
+                <MessageSquare className="mr-1 h-4 w-4" /> Messages
+            </Link>
+           )}
           <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground">
             <CreditCard className="mr-1 h-4 w-4" /> Payments
           </Link>
+          {isProvider && currentUser && (
+            <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80">
+              <Briefcase className="mr-1 h-4 w-4" /> Provider Panel
+            </Link>
+          )}
+           {isAdmin && currentUser && (
+            <Link href="/adminpanel/admin" className="flex items-center text-destructive font-semibold transition-colors hover:text-destructive/80">
+              <UserCog className="mr-1 h-4 w-4" /> Admin Panel
+            </Link>
+          )}
         </nav>
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
@@ -130,6 +173,11 @@ const Header = () => {
             </Button>
           ) : (
             <>
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+                <Link href="/providerspanel/login">
+                   Provider Login
+                </Link>
+              </Button>
               <Button variant="outline" size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/login">
                   <LogIn className="mr-2 h-4 w-4" /> Log In
@@ -149,4 +197,3 @@ const Header = () => {
 };
 
 export default Header;
-

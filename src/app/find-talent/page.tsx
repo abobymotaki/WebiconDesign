@@ -10,11 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Briefcase, DollarSign, MapPin, Star, Loader2, Search } from 'lucide-react';
+import { Briefcase, DollarSign, MapPin, Star, Loader2, Search, ShieldAlert } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { collection, getDocs, QueryDocumentSnapshot, DocumentData, query, where } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 
 interface Professional {
@@ -28,6 +31,7 @@ interface Professional {
   rate: string;
   location: string;
   rating: number;
+  // Add other fields that might come from Firestore, ensure they match the 'talents' collection structure
 }
 
 const placeholderProfessionalsOnError: Professional[] = [
@@ -59,38 +63,91 @@ const placeholderProfessionalsOnError: Professional[] = [
 
 
 const FindProfessionalsPage: NextPage = () => {
+  const router = useRouter();
+  const { toast } = useToast();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const fetchProfessionals = async () => {
-      try {
-        setLoading(true);
-        // Assuming 'talents' collection is used for professionals for now.
-        const professionalsCollection = collection(db, 'talents');
-        const professionalSnapshot = await getDocs(professionalsCollection);
-        const professionalsList = professionalSnapshot.docs.map((doc: QueryDocumentSnapshot<DocumentData>) => ({
-          id: doc.id,
-          ...doc.data(),
-        } as Professional));
-        
-        if (professionalsList.length === 0) {
-           setProfessionals(placeholderProfessionalsOnError); 
-        } else {
-          setProfessionals(professionalsList);
-        }
-      } catch (err) {
-        console.error("Error fetching professionals:", err);
-        setError('Failed to load professionals. Displaying placeholder data.');
-        setProfessionals(placeholderProfessionalsOnError);
-      } finally {
-        setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchProfessionals();
+      } else {
+        toast({
+          title: "Access Denied",
+          description: "You need to be logged in to view this page. Redirecting...",
+          variant: "destructive",
+        });
+        router.replace('/'); // Redirect to landing page if not authenticated
       }
-    };
+    });
+    return () => unsubscribe();
+  }, [router, toast]);
 
-    fetchProfessionals();
-  }, []);
+  const fetchProfessionals = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      // Fetch users marked as 'isProvider' from the 'users' collection
+      // Or, if you have a separate 'talents' or 'providers' collection that contains their profile details:
+      const providersQuery = query(collection(db, 'users'), where('isProvider', '==', true));
+      const providerSnapshot = await getDocs(providersQuery);
+      
+      const professionalsList = providerSnapshot.docs.map((docSnap: QueryDocumentSnapshot<DocumentData>) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id, // This is the user's UID
+          name: data.name || 'N/A', // Assuming 'name' field exists
+          avatar: data.avatarUrl || `https://placehold.co/100x100.png`, // Assuming 'avatarUrl'
+          dataAiHint: data.dataAiHint || `${data.name ? data.name.split(' ')[0].toLowerCase() : 'person'} portrait`,
+          role: data.role || 'Service Provider', // Assuming 'role' field
+          bio: data.bio || 'No bio available.', // Assuming 'bio' field
+          skills: data.skills || [], // Assuming 'skills' array
+          rate: data.rate || 'N/A', // Assuming 'rate'
+          location: data.location || 'Remote', // Assuming 'location'
+          rating: data.rating || 0, // Assuming 'rating'
+          ...data, // Spread other potential fields
+        } as Professional;
+      });
+      
+      if (professionalsList.length === 0) {
+         setProfessionals(placeholderProfessionalsOnError); 
+         setError("No professionals found at the moment. Displaying placeholder data.");
+      } else {
+        setProfessionals(professionalsList);
+      }
+    } catch (err) {
+      console.error("Error fetching professionals:", err);
+      setError('Failed to load professionals. Displaying placeholder data.');
+      setProfessionals(placeholderProfessionalsOnError);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!currentUser && isLoading) { // Show loading while auth state is being determined
+    return (
+      <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+        <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
+        <p className="text-muted-foreground">Checking authentication...</p>
+      </div>
+    );
+  }
+  
+  // If not authenticated and no longer loading auth, redirection should have happened.
+  // This is a fallback.
+  if (!currentUser && !isLoading) {
+     return (
+       <div className="flex flex-col min-h-screen bg-background items-center justify-center">
+        <ShieldAlert className="h-16 w-16 text-destructive mb-4" />
+        <p className="text-destructive">Access Denied. Redirecting...</p>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -106,21 +163,21 @@ const FindProfessionalsPage: NextPage = () => {
           </p>
         </div>
 
-        {loading && (
+        {isLoading && (
           <div className="flex justify-center items-center py-10">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
             <p className="ml-4 text-lg text-muted-foreground">Loading professionals...</p>
           </div>
         )}
 
-        {error && !loading && (
+        {error && !isLoading && (
           <Alert variant="destructive" className="mb-8">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {!loading && (
+        {!isLoading && !error && professionals.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {professionals.map((professional, index) => (
               <Card 
@@ -129,7 +186,8 @@ const FindProfessionalsPage: NextPage = () => {
               >
                 <CardHeader className="items-center text-center pb-4">
                   <Avatar className="w-24 h-24 mb-4 border-2 border-primary/20 shadow-md">
-                    <Image src={professional.avatar} alt={professional.name} width={100} height={100} className="rounded-full" data-ai-hint={professional.dataAiHint || "person"} />
+                    {/* Ensure professional.avatar is a valid URL */}
+                    <Image src={professional.avatar || 'https://placehold.co/100x100.png'} alt={professional.name} width={100} height={100} className="rounded-full" data-ai-hint={professional.dataAiHint || "person"} />
                     <AvatarFallback>{professional.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <CardTitle className="text-2xl font-semibold text-foreground">{professional.name}</CardTitle>
@@ -140,10 +198,10 @@ const FindProfessionalsPage: NextPage = () => {
                 <CardContent className="text-center">
                   <p className="text-muted-foreground text-sm mb-4 px-2">{professional.bio}</p>
                   <div className="flex flex-wrap justify-center gap-2 mb-4">
-                    {professional.skills.slice(0, 4).map((skill) => (
+                    {(professional.skills || []).slice(0, 4).map((skill) => (
                       <Badge key={skill} variant="secondary" className="text-xs">{skill}</Badge>
                     ))}
-                    {professional.skills.length > 4 && <Badge variant="outline" className="text-xs">+{professional.skills.length - 4} more</Badge>}
+                    {(professional.skills || []).length > 4 && <Badge variant="outline" className="text-xs">+{professional.skills.length - 4} more</Badge>}
                   </div>
                   <div className="flex justify-around items-center text-sm text-muted-foreground border-t pt-4">
                     <div className="flex items-center gap-1">
@@ -161,17 +219,18 @@ const FindProfessionalsPage: NextPage = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="justify-center pt-4">
-                  <Button asChild className="w-full md:w-auto">
-                    <Link href={`/profile/${professional.id}`}>View Profile</Link>
+                  {/* Link to a dynamic profile page based on user/provider ID */}
+                  <Button asChild className="w-full md:w-auto" disabled>
+                    <Link href={`/profile/${professional.id}`}>View Profile (Coming Soon)</Link>
                   </Button>
                 </CardFooter>
               </Card>
             ))}
           </div>
         )}
-         {professionals.length === 0 && !loading && !error && (
+         {professionals.length === 0 && !isLoading && !error && ( // Condition when fetch is done, no error, but no professionals
           <div className="text-center py-10">
-            <p className="text-lg text-muted-foreground">No professionals found at the moment. Please check back later!</p>
+            <p className="text-lg text-muted-foreground">No professionals found matching the criteria.</p>
           </div>
         )}
       </main>
