@@ -11,7 +11,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, LogOut, ShieldCheck, Loader2, TrendingUp, Users } from 'lucide-react';
+import { LayoutDashboard, LogOut, ShieldCheck, Loader2, TrendingUp, Users, Settings, UserPlus } from 'lucide-react'; // Added UserPlus
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -78,6 +78,8 @@ const AdminPanelPage: NextPage = () => {
     try {
       await signOut(auth);
       sessionStorage.removeItem('isAdminAuthenticated');
+      // Also remove any other admin specific session items if added in future
+      // sessionStorage.removeItem('adminUserDetails'); 
       toast({
         title: "Admin Logout",
         description: "You have been logged out from the admin panel.",
@@ -137,7 +139,7 @@ const AdminPanelPage: NextPage = () => {
               <p className="text-sm">This admin panel uses Firebase Authentication and Firestore for role verification.</p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="hover:shadow-lg transition-shadow">
                     <CardHeader className="flex flex-row items-center gap-3">
                         <div className="p-3 rounded-full bg-primary/10">
@@ -160,11 +162,30 @@ const AdminPanelPage: NextPage = () => {
                 <Card className="hover:shadow-lg transition-shadow">
                      <CardHeader className="flex flex-row items-center gap-3">
                         <div className="p-3 rounded-full bg-primary/10">
-                            <Users className="h-6 w-6 text-primary" />
+                            <UserPlus className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <CardTitle>User Management</CardTitle>
-                            <CardDescription>Manage users, roles, and permissions.</CardDescription>
+                            <CardTitle>Manage Users</CardTitle>
+                            <CardDescription>Add new users or modify existing ones.</CardDescription>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                         <Button asChild className="w-full">
+                            <Link href="/adminpanel/admin/manage-users">
+                                Add/Manage Users
+                            </Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+                
+                <Card className="hover:shadow-lg transition-shadow">
+                     <CardHeader className="flex flex-row items-center gap-3">
+                        <div className="p-3 rounded-full bg-primary/10">
+                            <Settings className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>Platform Settings</CardTitle>
+                            <CardDescription>Configure core application settings.</CardDescription>
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -178,7 +199,7 @@ const AdminPanelPage: NextPage = () => {
             <div className="p-6 border rounded-lg bg-muted/30">
               <h3 className="text-xl font-semibold mb-3 text-foreground">Placeholder Admin Content</h3>
               <p className="text-muted-foreground">
-                More admin functionalities like content moderation, settings, etc., will appear here.
+                More admin functionalities like content moderation, etc., will appear here.
               </p>
             </div>
           </CardContent>
@@ -190,3 +211,4 @@ const AdminPanelPage: NextPage = () => {
 };
 
 export default AdminPanelPage;
+
