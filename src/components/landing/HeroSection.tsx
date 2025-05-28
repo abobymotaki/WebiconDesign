@@ -21,10 +21,10 @@ const HeroSection = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="text-center md:text-left">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-              Unleash Your <span className="text-primary">Project Potential</span>
+              Access Top-Tier Talent & <span className="text-primary">Project Services</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0">
-              WebiconDesign is the premier platform connecting innovative professionals with businesses seeking top-tier talent for their projects.
+              WebiconDesign offers comprehensive services to connect you with skilled professionals, manage projects seamlessly, and ensure successful outcomes.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <Button size="lg" asChild className="aura-pulse">
@@ -36,7 +36,7 @@ const HeroSection = () => {
               <Button variant="outline" size="lg" asChild>
                 <Link href="#how-it-works">
                   <PlayCircle className="mr-2 h-5 w-5" />
-                  Watch How It Works
+                  See How It Works
                 </Link>
               </Button>
             </div>
@@ -48,11 +48,11 @@ const HeroSection = () => {
              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
             <Image
               src="https://placehold.co/600x400.png"
-              alt="Platform interface"
+              alt="Platform interface showing collaboration"
               width={600}
               height={400}
               className="rounded-xl shadow-2xl relative z-10 transform group-hover:scale-105 transition-transform duration-300"
-              data-ai-hint="digital workspace"
+              data-ai-hint="digital workspace collaboration"
               priority
             />
           </div>

@@ -6,7 +6,7 @@ const steps = [
   {
     icon: <UserPlus className="h-10 w-10 text-primary" />,
     title: 'Sign Up & Create Profile',
-    description: 'Join for free and set up your detailed profile, whether you are a professional showcasing skills or a client posting a project.',
+    description: 'Join for free. Set up your profile to showcase skills if you are a professional, or outline project needs if you are a client.',
     delay: 0,
   },
   {
@@ -24,7 +24,7 @@ const steps = [
   {
     icon: <DollarSign className="h-10 w-10 text-primary" />,
     title: 'Payment & Review',
-    description: 'Securely process payments before the project begins. After completion, both parties can leave reviews to build reputation.',
+    description: 'Securely process payments once terms are agreed upon and before the project begins. After completion, both parties can leave reviews.',
     delay: 3,
   },
 ];
@@ -35,16 +35,16 @@ const HowItWorksSection = () => {
       <div className="container mx-auto max-w-screen-xl px-4 md:px-6">
         <div className="text-center mb-12 md:mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-            Getting Started is <span className="text-primary">Easy</span>
+            How Our Platform <span className="text-primary">Services Work</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Follow these simple steps to start your journey on WebiconDesign.
+            Follow these simple steps to leverage WebiconDesign's services, from finding talent to project completion and secure payment.
           </p>
         </div>
         <div className="relative">
           {/* Connecting line - visible on larger screens */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-10"></div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, index) => (
               <div key={index} className={`relative animate-fade-in-delay-${step.delay}`}>
