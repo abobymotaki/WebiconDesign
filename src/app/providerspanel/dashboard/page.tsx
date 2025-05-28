@@ -12,7 +12,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutDashboard, LogOut, Briefcase, Loader2, ShieldCheck, UserCog, FileText, MessageSquare } from 'lucide-react'; // Added UserCog, FileText, MessageSquare
+import { LayoutDashboard, LogOut, Briefcase, Loader2, ShieldCheck, UserCog, FileText, MessageSquare, Inbox } from 'lucide-react'; // Added UserCog, FileText, MessageSquare, Inbox
 import { useToast } from '@/hooks/use-toast';
 
 const ProviderDashboardPage: NextPage = () => {
@@ -177,7 +177,7 @@ const ProviderDashboardPage: NextPage = () => {
                 <Card className="hover:shadow-lg transition-shadow">
                      <CardHeader className="flex flex-row items-center gap-3">
                         <div className="p-3 rounded-full bg-primary/10">
-                            <FileText className="h-6 w-6 text-primary" />
+                            <Inbox className="h-6 w-6 text-primary" />
                         </div>
                         <div>
                             <CardTitle>Contact Submissions</CardTitle>
@@ -185,8 +185,10 @@ const ProviderDashboardPage: NextPage = () => {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Button disabled className="w-full">
-                           Coming Soon
+                        <Button asChild className="w-full">
+                           <Link href="/providerspanel/contact-submissions">
+                                View Submissions
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>
