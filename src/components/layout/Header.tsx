@@ -10,7 +10,7 @@ import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter, usePathname } from 'next/navigation';
-import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'; // Added SheetHeader, SheetTitle
+import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'; 
 import { cn } from '@/lib/utils';
 
 const Header = () => {
@@ -62,14 +62,13 @@ const Header = () => {
                 title: "Welcome back, Provider!",
                 description: "You can access your provider tools.",
                 action: (
-                  <Button variant="outline" size="sm" onClick={() => router.push('/providerspanel/dashboard')}>
+                  <Button variant="outline" size="sm" onClick={() => {router.push('/providerspanel/dashboard'); setIsSheetOpen(false);}}>
                     Go to Dashboard
                   </Button>
                 ),
               });
               sessionStorage.setItem('providerWelcomeShownThisSession', 'true');
             } else if (currentIsAdmin && !isAdminPanelPage && sessionStorage.getItem('adminWelcomeShownThisSession') !== 'true') {
-                // Similar toast for admin if desired
                 // toast({ title: "Admin Access", description: "Welcome to the admin panel."});
                 // sessionStorage.setItem('adminWelcomeShownThisSession', 'true');
             }
@@ -102,11 +101,10 @@ const Header = () => {
   
   useEffect(() => {
     if (isSheetOpen) {
-      setIsSheetOpen(false);
+      // No automatic closing, user closes manually or by navigation
     }
-    // Intentionally disabled exhaustive-deps, we only want this to run on pathname change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, isSheetOpen]);
+
 
   const toggleTheme = () => {
     const newIsDarkModeState = !isDarkMode;
@@ -140,20 +138,27 @@ const Header = () => {
     }
   };
 
-  const NavLink = ({ href, children, icon: Icon }: { href: string; children: React.ReactNode; icon?: React.ElementType }) => (
-    <SheetClose asChild>
-      <Link
-        href={href}
-        className={cn(
-          "flex items-center py-2 px-3 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent",
-          pathname === href && "bg-accent text-foreground"
-        )}
-      >
-        {Icon && <Icon className="mr-2 h-4 w-4" />}
-        {children}
-      </Link>
-    </SheetClose>
-  );
+  const NavLink = ({ href, children, icon: Icon, requiresAuth = false }: { href: string; children: React.ReactNode; icon?: React.ElementType, requiresAuth?: boolean }) => {
+    if (requiresAuth && !currentUser) {
+      return null;
+    }
+    return (
+      <SheetClose asChild>
+        <Link
+          href={href}
+          onClick={() => setIsSheetOpen(false)}
+          className={cn(
+            "flex items-center py-2 px-3 rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-accent",
+            pathname === href && "bg-accent text-foreground"
+          )}
+        >
+          {Icon && <Icon className="mr-2 h-4 w-4" />}
+          {children}
+        </Link>
+      </SheetClose>
+    );
+  };
+
 
   if (!mounted || isLoadingAuth) {
     return (
@@ -192,10 +197,12 @@ const Header = () => {
           <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How It Works</Link>
           <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Search className="mr-1 h-4 w-4" /> Find Professionals</Link>
            {currentUser && (
-            <Link href="/messages" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><MessageSquare className="mr-1 h-4 w-4" /> Messages</Link>
+            <>
+                <Link href="/messages" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><MessageSquare className="mr-1 h-4 w-4" /> Messages</Link>
+                <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><CreditCard className="mr-1 h-4 w-4" /> Payments</Link>
+                <Link href="/contact" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Mail className="mr-1 h-4 w-4" /> Contact Us</Link>
+            </>
            )}
-          <Link href="/payments" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><CreditCard className="mr-1 h-4 w-4" /> Payments</Link>
-          <Link href="/contact" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Mail className="mr-1 h-4 w-4" /> Contact Us</Link>
           {isProvider && currentUser && (
             <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80"><Briefcase className="mr-1 h-4 w-4" /> Provider Panel</Link>
           )}
@@ -238,9 +245,9 @@ const Header = () => {
                 <NavLink href="/#features" icon={Search}>Features</NavLink>
                 <NavLink href="/#how-it-works" icon={Search}>How It Works</NavLink>
                 <NavLink href="/find-talent" icon={Search}>Find Professionals</NavLink>
-                {currentUser && <NavLink href="/messages" icon={MessageSquare}>Messages</NavLink>}
-                <NavLink href="/payments" icon={CreditCard}>Payments</NavLink>
-                <NavLink href="/contact" icon={Mail}>Contact Us</NavLink>
+                <NavLink href="/messages" icon={MessageSquare} requiresAuth={true}>Messages</NavLink>
+                <NavLink href="/payments" icon={CreditCard} requiresAuth={true}>Payments</NavLink>
+                <NavLink href="/contact" icon={Mail} requiresAuth={true}>Contact Us</NavLink>
                 {isProvider && currentUser && <NavLink href="/providerspanel/dashboard" icon={Briefcase}>Provider Panel</NavLink>}
                 {isAdmin && currentUser && <NavLink href="/adminpanel/admin" icon={UserCog}>Admin Panel</NavLink>}
               </nav>
@@ -253,12 +260,12 @@ const Header = () => {
                 ) : (
                   <div className="space-y-2">
                     <SheetClose asChild>
-                      <Button variant="outline" size="sm" asChild className="w-full">
+                      <Button variant="outline" size="sm" asChild className="w-full" onClick={() => setIsSheetOpen(false)}>
                         <Link href="/login"><LogIn className="mr-2 h-4 w-4" /> Log In</Link>
                       </Button>
                     </SheetClose>
                     <SheetClose asChild>
-                      <Button size="sm" asChild className="w-full">
+                      <Button size="sm" asChild className="w-full" onClick={() => setIsSheetOpen(false)}>
                         <Link href="/signup"><UserPlus className="mr-2 h-4 w-4" /> Sign Up</Link>
                       </Button>
                     </SheetClose>
