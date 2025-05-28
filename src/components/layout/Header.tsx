@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail, Menu } from 'lucide-react';
+import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail, Menu, Users } from 'lucide-react'; // Added Users
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
@@ -18,7 +18,7 @@ const Header = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isProvider, setIsProvider] = useState(false);
+  const [isProvider, setIsProvider] = useState(false); // Conceptually "isTeamMember"
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
@@ -46,7 +46,7 @@ const Header = () => {
           const userDocSnap = await getDoc(userDocRef);
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            const currentIsProvider = userData.isProvider === true;
+            const currentIsProvider = userData.isProvider === true; // isProvider now means isTeamMember
             const currentIsAdmin = userData.isAdmin === true;
             setIsProvider(currentIsProvider);
             setIsAdmin(currentIsAdmin);
@@ -59,11 +59,11 @@ const Header = () => {
 
             if (currentIsProvider && !isProviderPanelPage && sessionStorage.getItem('providerWelcomeShownThisSession') !== 'true') {
               toast({
-                title: "Welcome back, Provider!",
-                description: "You can access your provider tools.",
+                title: "Welcome back, Team Member!",
+                description: "You can access team tools if applicable.",
                 action: (
                   <Button variant="outline" size="sm" onClick={() => {router.push('/providerspanel/dashboard'); setIsSheetOpen(false);}}>
-                    Go to Dashboard
+                    Go to Team Panel
                   </Button>
                 ),
               });
@@ -193,9 +193,9 @@ const Header = () => {
         </Link>
         
         <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
-          <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">Features</Link>
-          <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How It Works</Link>
-          <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Search className="mr-1 h-4 w-4" /> Find Professionals</Link>
+          <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">Our Approach</Link>
+          <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How We Work</Link>
+          <Link href="/find-talent" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Users className="mr-1 h-4 w-4" /> Meet Our Team</Link>
            {currentUser && (
             <>
                 <Link href="/messages" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><MessageSquare className="mr-1 h-4 w-4" /> Messages</Link>
@@ -203,8 +203,8 @@ const Header = () => {
                 <Link href="/contact" className="flex items-center text-muted-foreground transition-colors hover:text-foreground"><Mail className="mr-1 h-4 w-4" /> Contact Us</Link>
             </>
            )}
-          {isProvider && currentUser && (
-            <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80"><Briefcase className="mr-1 h-4 w-4" /> Provider Panel</Link>
+          {isProvider && currentUser && ( // isProvider means isTeamMember
+            <Link href="/providerspanel/dashboard" className="flex items-center text-primary font-semibold transition-colors hover:text-primary/80"><Briefcase className="mr-1 h-4 w-4" /> Team Panel</Link>
           )}
            {isAdmin && currentUser && (
             <Link href="/adminpanel/admin" className="flex items-center text-destructive font-semibold transition-colors hover:text-destructive/80"><UserCog className="mr-1 h-4 w-4" /> Admin Panel</Link>
@@ -242,13 +242,13 @@ const Header = () => {
                 <SheetTitle>Navigation</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col space-y-2 flex-grow">
-                <NavLink href="/#features" icon={Search}>Features</NavLink>
-                <NavLink href="/#how-it-works" icon={Search}>How It Works</NavLink>
-                <NavLink href="/find-talent" icon={Search}>Find Professionals</NavLink>
+                <NavLink href="/#features" icon={Search}>Our Approach</NavLink>
+                <NavLink href="/#how-it-works" icon={Search}>How We Work</NavLink>
+                <NavLink href="/find-talent" icon={Users}>Meet Our Team</NavLink>
                 <NavLink href="/messages" icon={MessageSquare} requiresAuth={true}>Messages</NavLink>
                 <NavLink href="/payments" icon={CreditCard} requiresAuth={true}>Payments</NavLink>
                 <NavLink href="/contact" icon={Mail} requiresAuth={true}>Contact Us</NavLink>
-                {isProvider && currentUser && <NavLink href="/providerspanel/dashboard" icon={Briefcase}>Provider Panel</NavLink>}
+                {isProvider && currentUser && <NavLink href="/providerspanel/dashboard" icon={Briefcase}>Team Panel</NavLink>}
                 {isAdmin && currentUser && <NavLink href="/adminpanel/admin" icon={UserCog}>Admin Panel</NavLink>}
               </nav>
               

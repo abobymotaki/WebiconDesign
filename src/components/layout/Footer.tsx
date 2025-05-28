@@ -16,17 +16,17 @@ const Footer = () => {
               <span className="font-extrabold text-2xl text-foreground">WebiconDesign</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground">
-              Your platform for expert project services, connecting businesses with top talent.
+              WebiconDesign: Our dedicated team provides expert project services for your business needs.
             </p>
           </div>
           <div className="md:col-span-2 grid grid-cols-2 gap-8 sm:grid-cols-3">
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Platform</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Our Services</h3>
               <ul className="mt-4 space-y-2">
-                <li><Link href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How it Works</Link></li>
-                <li><Link href="/#features" className="text-sm text-muted-foreground hover:text-foreground">Features</Link></li>
+                <li><Link href="/#how-it-works" className="text-sm text-muted-foreground hover:text-foreground">How We Work</Link></li>
+                <li><Link href="/#features" className="text-sm text-muted-foreground hover:text-foreground">Our Approach</Link></li>
                 <li><Link href="/pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing</Link></li>
-                 <li><Link href="/find-talent" className="text-sm text-muted-foreground hover:text-foreground">Find Professionals</Link></li>
+                 <li><Link href="/find-talent" className="text-sm text-muted-foreground hover:text-foreground">Meet Our Team</Link></li>
                  <li><Link href="/payments" className="text-sm text-muted-foreground hover:text-foreground">Payments</Link></li>
               </ul>
             </div>

@@ -19,37 +19,37 @@ import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 // Mock Data
-const totalUsers = 1250;
-const totalProjects = 340;
+const totalClients = 125; // Changed from totalUsers
+const totalProjects = 34;
 const revenueThisMonth = 5250.75;
-const newSignupsLast7Days = 78;
+const newClientsLast7Days = 8; // Changed from newSignupsLast7Days
 
-const userSignupsData = [
-  { date: '2024-07-01', signups: 10 },
-  { date: '2024-07-02', signups: 15 },
-  { date: '2024-07-03', signups: 8 },
-  { date: '2024-07-04', signups: 20 },
-  { date: '2024-07-05', signups: 12 },
-  { date: '2024-07-06', signups: 18 },
-  { date: '2024-07-07', signups: 25 },
+const clientAcquisitionData = [ // Changed from userSignupsData
+  { date: '2024-07-01', clients: 1 },
+  { date: '2024-07-02', clients: 2 },
+  { date: '2024-07-03', clients: 0 },
+  { date: '2024-07-04', clients: 3 },
+  { date: '2024-07-05', clients: 1 },
+  { date: '2024-07-06', clients: 1 },
+  { date: '2024-07-07', clients: 2 },
 ];
 
-const projectCategoriesData = [
-  { category: 'Web Dev', count: 120 },
-  { category: 'Mobile Dev', count: 80 },
-  { category: 'Design', count: 90 },
-  { category: 'Marketing', count: 50 },
+const projectCategoriesFocusData = [ // Changed from projectCategoriesData
+  { category: 'Web Dev', count: 12 },
+  { category: 'Mobile Dev', count: 8 },
+  { category: 'Design', count: 9 },
+  { category: 'Strategy', count: 5 },
 ];
 
 const recentPaymentsData = [
-  { id: 'pay_1', email: 'user1@example.com', amount: 50.00, date: '2024-07-07', status: 'Succeeded' },
-  { id: 'pay_2', email: 'user2@example.com', amount: 75.00, date: '2024-07-06', status: 'Succeeded' },
-  { id: 'pay_3', email: 'user3@example.com', amount: 120.00, date: '2024-07-05', status: 'Succeeded' },
-  { id: 'pay_4', email: 'user4@example.com', amount: 30.00, date: '2024-07-05', status: 'Succeeded' },
+  { id: 'pay_1', email: 'client1@example.com', amount: 500.00, date: '2024-07-07', status: 'Succeeded' },
+  { id: 'pay_2', email: 'client2@example.com', amount: 750.00, date: '2024-07-06', status: 'Succeeded' },
+  { id: 'pay_3', email: 'client3@example.com', amount: 1200.00, date: '2024-07-05', status: 'Succeeded' },
+  { id: 'pay_4', email: 'client4@example.com', amount: 300.00, date: '2024-07-05', status: 'Succeeded' },
 ];
 
 const chartConfig = {
-  signups: { label: "Signups", color: "hsl(var(--chart-1))" },
+  clients: { label: "Clients", color: "hsl(var(--chart-1))" }, // Changed from signups
   projects: { label: "Projects", color: "hsl(var(--chart-2))" },
 };
 
@@ -129,21 +129,21 @@ const AdminAnalyticsPage: NextPage = () => {
           <CardHeader>
             <CardTitle className="text-3xl font-bold flex items-center">
               <TrendingUp className="mr-3 h-8 w-8 text-primary" />
-              Admin Analytics Dashboard
+              Team Analytics Dashboard
             </CardTitle>
-            <CardDescription>Overview of platform activity and user metrics.</CardDescription>
+            <CardDescription>Overview of client activity and project metrics.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
                   <Users className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalUsers.toLocaleString()}</div>
-                  <p className="text-xs text-muted-foreground">All registered users</p>
+                  <div className="text-2xl font-bold">{totalClients.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">All engaged clients</p>
                 </CardContent>
               </Card>
               <Card>
@@ -163,16 +163,16 @@ const AdminAnalyticsPage: NextPage = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">${revenueThisMonth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                  <p className="text-xs text-muted-foreground">Platform earnings</p>
+                  <p className="text-xs text-muted-foreground">Team earnings</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">New Signups (7d)</CardTitle>
+                  <CardTitle className="text-sm font-medium">New Clients (7d)</CardTitle>
                   <TrendingUp className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">+{newSignupsLast7Days}</div>
+                  <div className="text-2xl font-bold">+{newClientsLast7Days}</div>
                    <p className="text-xs text-muted-foreground">In the last 7 days</p>
                 </CardContent>
               </Card>
@@ -182,29 +182,29 @@ const AdminAnalyticsPage: NextPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center"><LineChartIcon className="mr-2 h-5 w-5 text-primary" />User Signups Over Time</CardTitle>
-                  <CardDescription>Daily new user registrations (mock data)</CardDescription>
+                  <CardTitle className="flex items-center"><LineChartIcon className="mr-2 h-5 w-5 text-primary" />Client Acquisition Over Time</CardTitle>
+                  <CardDescription>Daily new client engagements (mock data)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                    <LineChart data={userSignupsData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                    <LineChart data={clientAcquisitionData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
                       <YAxis />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="signups" stroke="var(--color-signups)" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="clients" stroke="var(--color-clients)" strokeWidth={2} dot={false} />
                     </LineChart>
                   </ChartContainer>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center"><BarChartIcon className="mr-2 h-5 w-5 text-primary" />Project Distribution</CardTitle>
-                  <CardDescription>Number of projects by category (mock data)</CardDescription>
+                  <CardTitle className="flex items-center"><BarChartIcon className="mr-2 h-5 w-5 text-primary" />Project Category Focus</CardTitle>
+                  <CardDescription>Number of projects by service category (mock data)</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                    <BarChart data={projectCategoriesData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                    <BarChart data={projectCategoriesFocusData} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} />
                       <XAxis dataKey="category" />
                       <YAxis />
@@ -220,13 +220,13 @@ const AdminAnalyticsPage: NextPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" />Recent Payments</CardTitle>
-                <CardDescription>A list of recent transactions (mock data)</CardDescription>
+                <CardDescription>A list of recent transactions from clients (mock data)</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Email</TableHead>
+                      <TableHead>Client Email</TableHead>
                       <TableHead>Amount (USD)</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Status</TableHead>

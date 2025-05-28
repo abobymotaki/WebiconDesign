@@ -1,30 +1,30 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, FileText, Briefcase, DollarSign } from 'lucide-react'; // Removed Award
+import { UserPlus, FileText, Briefcase, DollarSign, MessageSquare, Zap } from 'lucide-react'; 
 
 const steps = [
   {
-    icon: <UserPlus className="h-10 w-10 text-primary" />,
-    title: 'Sign Up & Create Profile',
-    description: 'Join for free. Set up your profile to showcase skills if you are a professional, or outline project needs if you are a client.',
+    icon: <MessageSquare className="h-10 w-10 text-primary" />,
+    title: '1. Initial Consultation & Goal Setting',
+    description: 'Reach out to us. We\'ll discuss your project needs, goals, and how our team’s expertise can best serve you.',
     delay: 0,
   },
   {
     icon: <FileText className="h-10 w-10 text-primary" />,
-    title: 'Post or Find Opportunities',
-    description: 'Clients can post detailed project requirements. Professionals can browse and apply for projects that match their expertise.',
+    title: '2. Project Proposal & Agreement',
+    description: 'Based on our discussion, we\'ll craft a detailed project proposal. Once we align on the scope and terms, we kick things off.',
     delay: 1,
   },
   {
     icon: <Briefcase className="h-10 w-10 text-primary" />,
-    title: 'Collaborate & Complete',
-    description: 'Use our platform tools to communicate, share files, and manage the project. Ensure successful completion with milestones.',
+    title: '3. Dedicated Collaboration & Execution',
+    description: 'You\'ll work directly with our dedicated team members. We use efficient tools for communication and project management to ensure success.',
     delay: 2,
   },
   {
     icon: <DollarSign className="h-10 w-10 text-primary" />,
-    title: 'Payment & Review',
-    description: 'Securely process payments once terms are agreed upon and before the project begins. After completion, both parties can leave reviews.',
+    title: '4. Secure Payment & Project Handoff',
+    description: 'We ensure secure payment processing as per our agreement. After completion and your final review, we ensure a smooth project handoff.',
     delay: 3,
   },
 ];
@@ -35,10 +35,10 @@ const HowItWorksSection = () => {
       <div className="container mx-auto max-w-screen-xl px-4 md:px-6">
         <div className="text-center mb-12 md:mb-16 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-            How Our Platform <span className="text-primary">Services Work</span>
+            How We <span className="text-primary">Work With You</span>
           </h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Follow these simple steps to leverage WebiconDesign's services, from finding talent to project completion and secure payment.
+            Our process is designed for clarity and collaboration, ensuring we meet your project needs effectively from consultation to delivery.
           </p>
         </div>
         <div className="relative">

@@ -21,38 +21,38 @@ const HeroSection = () => {
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="text-center md:text-left">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-              Access Top-Tier Talent & <span className="text-primary">Project Services</span>
+              Expert Project Services by <span className="text-primary">Our Dedicated Team</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl mx-auto md:mx-0">
-              WebiconDesign offers comprehensive services to connect you with skilled professionals, manage projects seamlessly, and ensure successful outcomes.
+              At WebiconDesign, our small, dedicated team offers a comprehensive suite of project services. We collaborate closely with you to manage projects seamlessly and ensure successful outcomes.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <Button size="lg" asChild className="aura-pulse">
-                <Link href="/signup">
-                  Get Started Free
+                <Link href="/contact">
+                  Get Started With Us
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
                 <Link href="#how-it-works">
                   <PlayCircle className="mr-2 h-5 w-5" />
-                  See How It Works
+                  How We Work
                 </Link>
               </Button>
             </div>
             <p className="mt-8 text-sm text-muted-foreground">
-              Join thousands of professionals and clients. No credit card required.
+              Partner with our experienced team. Get started with a consultation.
             </p>
           </div>
           <div className="relative group">
              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-lg blur-xl opacity-50 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-tilt"></div>
             <Image
               src="https://placehold.co/600x400.png"
-              alt="Platform interface showing collaboration"
+              alt="Team collaborating on a project"
               width={600}
               height={400}
               className="rounded-xl shadow-2xl relative z-10 transform group-hover:scale-105 transition-transform duration-300"
-              data-ai-hint="digital workspace collaboration"
+              data-ai-hint="team collaboration digital"
               priority
             />
           </div>

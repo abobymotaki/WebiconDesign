@@ -13,8 +13,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'WebiconDesign - Your Project Services Platform',
-  description: 'WebiconDesign: Your platform for expert project services, connecting businesses with top talent and providing tools for seamless collaboration and success.',
+  title: 'WebiconDesign - Expert Project Services by Our Team',
+  description: 'WebiconDesign: A dedicated team offering expert project services. We bring collective expertise to ensure seamless collaboration and successful outcomes for your projects.',
 };
 
 export default function RootLayout({

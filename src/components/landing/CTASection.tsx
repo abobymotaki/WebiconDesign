@@ -8,10 +8,10 @@ const CTASection = () => {
       <div className="container mx-auto max-w-screen-md px-4 md:px-6 text-center animate-fade-in">
         <Sparkles className="h-12 w-12 mx-auto mb-4 text-primary-foreground opacity-80" />
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-          Ready to Utilize Our Platform Services?
+          Ready to Partner With Our Team?
         </h2>
         <p className="mt-6 text-lg md:text-xl max-w-xl mx-auto opacity-90">
-          Join WebiconDesign today to access a suite of services designed for project success. Connect, collaborate, and achieve your goals.
+          Partner with WebiconDesign today. Our team is ready to provide dedicated services for your project's success. Let's collaborate and achieve your goals together.
         </p>
         <div className="mt-10">
           <Button
@@ -20,13 +20,13 @@ const CTASection = () => {
             className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 aura-pulse shadow-lg transform hover:scale-105 transition-transform duration-200"
             asChild
           >
-            <Link href="/signup">
-              Sign Up Now - It&apos;s Free!
+            <Link href="/contact">
+              Contact Us For A Consultation
             </Link>
           </Button>
         </div>
         <p className="mt-4 text-sm opacity-70">
-          Start for free, no obligations.
+          Let's discuss your project needs.
         </p>
       </div>
     </section>

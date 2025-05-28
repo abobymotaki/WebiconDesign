@@ -53,7 +53,7 @@ const ContactPage: NextPage = () => {
       });
       toast({
         title: "Message Sent!",
-        description: "Thank you for contacting us. We'll get back to you soon.",
+        description: "Thank you for contacting us. Our team will get back to you soon.",
         variant: "default",
       });
       form.reset();
@@ -79,7 +79,7 @@ const ContactPage: NextPage = () => {
             Get In <span className="text-primary">Touch</span>
           </h1>
           <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
-            Have questions or want to discuss a project? Fill out the form below, and we&apos;ll respond as soon as possible.
+            Have questions or want to discuss your project with our team? Fill out the form below, and one of us will get back to you as soon as possible.
           </p>
         </div>
 
