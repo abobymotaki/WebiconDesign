@@ -3,14 +3,14 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail, Menu } from 'lucide-react'; // Added Menu
+import { Moon, Sun, CreditCard, Search, LogIn, UserPlus, LogOut, Briefcase, UserCog, MessageSquare, Mail, Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
-import { Sheet, SheetContent, SheetClose, SheetTrigger } from '@/components/ui/sheet'; // Added Sheet components
+import { useRouter, usePathname } from 'next/navigation';
+import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'; // Added SheetHeader, SheetTitle
 import { cn } from '@/lib/utils';
 
 const Header = () => {
@@ -20,14 +20,13 @@ const Header = () => {
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isProvider, setIsProvider] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isSheetOpen, setIsSheetOpen] = useState(false); // State for mobile menu
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const pathname = usePathname(); // For closing sheet on navigation
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
-    // Theme initialization
     const localTheme = localStorage.getItem('theme');
     if (localTheme) {
       const newIsDarkMode = localTheme === 'dark';
@@ -39,7 +38,6 @@ const Header = () => {
       document.documentElement.classList.toggle('dark', prefersDark);
     }
 
-    // Auth state listener
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
@@ -56,7 +54,10 @@ const Header = () => {
             if(currentIsProvider) sessionStorage.setItem('isProviderAuthenticated', 'true'); else sessionStorage.removeItem('isProviderAuthenticated');
             if(currentIsAdmin) sessionStorage.setItem('isAdminAuthenticated', 'true'); else sessionStorage.removeItem('isAdminAuthenticated');
 
-            if (currentIsProvider && sessionStorage.getItem('providerWelcomeShownThisSession') !== 'true') {
+            const isProviderPanelPage = pathname.startsWith('/providerspanel');
+            const isAdminPanelPage = pathname.startsWith('/adminpanel/admin');
+
+            if (currentIsProvider && !isProviderPanelPage && sessionStorage.getItem('providerWelcomeShownThisSession') !== 'true') {
               toast({
                 title: "Welcome back, Provider!",
                 description: "You can access your provider tools.",
@@ -67,7 +68,12 @@ const Header = () => {
                 ),
               });
               sessionStorage.setItem('providerWelcomeShownThisSession', 'true');
+            } else if (currentIsAdmin && !isAdminPanelPage && sessionStorage.getItem('adminWelcomeShownThisSession') !== 'true') {
+                // Similar toast for admin if desired
+                // toast({ title: "Admin Access", description: "Welcome to the admin panel."});
+                // sessionStorage.setItem('adminWelcomeShownThisSession', 'true');
             }
+
 
           } else {
             setIsProvider(false);
@@ -85,17 +91,21 @@ const Header = () => {
         setIsAdmin(false);
         sessionStorage.removeItem('isProviderAuthenticated');
         sessionStorage.removeItem('isAdminAuthenticated');
-        sessionStorage.removeItem('providerWelcomeShownThisSession'); 
+        sessionStorage.removeItem('providerWelcomeShownThisSession');
+        sessionStorage.removeItem('adminWelcomeShownThisSession');
       }
       setIsLoadingAuth(false);
     });
 
     return () => unsubscribe();
-  }, [toast, router]);
+  }, [toast, router, pathname]);
   
-  // Close sheet on pathname change
   useEffect(() => {
-    setIsSheetOpen(false);
+    if (isSheetOpen) {
+      setIsSheetOpen(false);
+    }
+    // Intentionally disabled exhaustive-deps, we only want this to run on pathname change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const toggleTheme = () => {
@@ -106,7 +116,7 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    setIsSheetOpen(false); // Close sheet on logout
+    setIsSheetOpen(false);
     try {
       await signOut(auth);
       setIsProvider(false);
@@ -114,6 +124,7 @@ const Header = () => {
       sessionStorage.removeItem('isProviderAuthenticated');
       sessionStorage.removeItem('isAdminAuthenticated');
       sessionStorage.removeItem('providerWelcomeShownThisSession');
+      sessionStorage.removeItem('adminWelcomeShownThisSession');
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
@@ -176,7 +187,6 @@ const Header = () => {
           <span className="font-extrabold text-2xl tracking-tight text-foreground">WebiconDesign</span>
         </Link>
         
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-4 text-sm font-medium">
           <Link href="/#features" className="text-muted-foreground transition-colors hover:text-foreground">Features</Link>
           <Link href="/#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How It Works</Link>
@@ -195,12 +205,10 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center space-x-2">
-          {/* Desktop Theme Toggle */}
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="hidden md:inline-flex">
             {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
 
-          {/* Desktop Auth Buttons */}
           {currentUser ? (
             <Button variant="outline" size="sm" onClick={handleLogout} className="hidden md:inline-flex">
               <LogOut className="mr-2 h-4 w-4" /> Log Out
@@ -216,52 +224,51 @@ const Header = () => {
             </>
           )}
 
-          {/* Mobile Menu Trigger */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open menu">
                 <Menu className="h-6 w-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px] p-4">
-              <div className="flex flex-col h-full">
-                <nav className="flex flex-col space-y-2 mt-6 flex-grow">
-                  <NavLink href="/#features" icon={Search /* Placeholder icon, choose appropriate ones */}>Features</NavLink>
-                  <NavLink href="/#how-it-works" icon={Search}>How It Works</NavLink>
-                  <NavLink href="/find-talent" icon={Search}>Find Professionals</NavLink>
-                  {currentUser && <NavLink href="/messages" icon={MessageSquare}>Messages</NavLink>}
-                  <NavLink href="/payments" icon={CreditCard}>Payments</NavLink>
-                  <NavLink href="/contact" icon={Mail}>Contact Us</NavLink>
-                  {isProvider && currentUser && <NavLink href="/providerspanel/dashboard" icon={Briefcase}>Provider Panel</NavLink>}
-                  {isAdmin && currentUser && <NavLink href="/adminpanel/admin" icon={UserCog}>Admin Panel</NavLink>}
-                </nav>
-                
-                <div className="mt-auto pt-4 border-t border-border/40">
-                  {currentUser ? (
-                    <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
-                      <LogOut className="mr-2 h-4 w-4" /> Log Out
-                    </Button>
-                  ) : (
-                    <div className="space-y-2">
-                      <SheetClose asChild>
-                        <Button variant="outline" size="sm" asChild className="w-full">
-                          <Link href="/login"><LogIn className="mr-2 h-4 w-4" /> Log In</Link>
-                        </Button>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Button size="sm" asChild className="w-full">
-                          <Link href="/signup"><UserPlus className="mr-2 h-4 w-4" /> Sign Up</Link>
-                        </Button>
-                      </SheetClose>
-                    </div>
-                  )}
-                </div>
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] p-4 flex flex-col">
+              <SheetHeader className="mb-4">
+                <SheetTitle>Navigation</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col space-y-2 flex-grow">
+                <NavLink href="/#features" icon={Search}>Features</NavLink>
+                <NavLink href="/#how-it-works" icon={Search}>How It Works</NavLink>
+                <NavLink href="/find-talent" icon={Search}>Find Professionals</NavLink>
+                {currentUser && <NavLink href="/messages" icon={MessageSquare}>Messages</NavLink>}
+                <NavLink href="/payments" icon={CreditCard}>Payments</NavLink>
+                <NavLink href="/contact" icon={Mail}>Contact Us</NavLink>
+                {isProvider && currentUser && <NavLink href="/providerspanel/dashboard" icon={Briefcase}>Provider Panel</NavLink>}
+                {isAdmin && currentUser && <NavLink href="/adminpanel/admin" icon={UserCog}>Admin Panel</NavLink>}
+              </nav>
+              
+              <div className="mt-auto pt-4 border-t border-border/40">
+                {currentUser ? (
+                  <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
+                    <LogOut className="mr-2 h-4 w-4" /> Log Out
+                  </Button>
+                ) : (
+                  <div className="space-y-2">
+                    <SheetClose asChild>
+                      <Button variant="outline" size="sm" asChild className="w-full">
+                        <Link href="/login"><LogIn className="mr-2 h-4 w-4" /> Log In</Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button size="sm" asChild className="w-full">
+                        <Link href="/signup"><UserPlus className="mr-2 h-4 w-4" /> Sign Up</Link>
+                      </Button>
+                    </SheetClose>
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
-      {/* Mobile Theme Toggle - Fixed Bottom Left */}
       <Button 
         variant="ghost" 
         size="icon" 
@@ -276,5 +283,3 @@ const Header = () => {
 };
 
 export default Header;
-
-    
